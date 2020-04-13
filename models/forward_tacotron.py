@@ -107,7 +107,11 @@ class ForwardTacotron(nn.Module):
                            channels=prenet_dims,
                            proj_channels=[prenet_dims, embed_dims],
                            num_highways=highways)
-        self.lstm = nn.LSTM(2 * prenet_dims,
+        self.lstm_1 = nn.LSTM(2 * prenet_dims,
+                            rnn_dim,
+                            batch_first=True,
+                            bidirectional=True)
+        self.lstm_2 = nn.LSTM(2 * rnn_dim,
                             rnn_dim,
                             batch_first=True,
                             bidirectional=True)
@@ -132,7 +136,8 @@ class ForwardTacotron(nn.Module):
         x = x.transpose(1, 2)
         x = self.prenet(x)
         x = self.lr(x, dur)
-        x, _ = self.lstm(x)
+        x, _ = self.lstm_1(x)
+        x, _ = self.lstm_2(x)
         x = F.dropout(x,
                       p=self.dropout,
                       training=self.training)
@@ -159,7 +164,8 @@ class ForwardTacotron(nn.Module):
         x = x.transpose(1, 2)
         x = self.prenet(x)
         x = self.lr(x, dur)
-        x, _ = self.lstm(x)
+        x, _ = self.lstm_1(x)
+        x, _ = self.lstm_2(x)
         x = F.dropout(x,
                       p=self.dropout,
                       training=self.training)
