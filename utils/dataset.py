@@ -172,9 +172,9 @@ class ForwardDataset(Dataset):
         item_id = self.metadata[index]
         text = self.text_dict[item_id]
         x = text_to_sequence(text)
-        mel = np.load(self.path/'mel'/f'{item_id}.npy')
+        mel = np.load(self.path/'gen_mel'/f'{item_id}.npy')
         mel_len = mel.shape[-1]
-        dur = np.load(self.path/'alg'/f'{item_id}.npy')
+        dur = np.load(self.path/'gen_alg'/f'{item_id}.npy')
         return x, mel, item_id, mel_len, dur
 
     def __len__(self):
