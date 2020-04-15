@@ -11,8 +11,10 @@ class Paths:
         self.data = Path(data_path).expanduser().resolve()
         self.quant = self.data/'quant'
         self.mel = self.data/'mel'
+        self.gen_mel = self.data/'gen_mel'
         self.gta = self.data/'gta'
         self.alg = self.data/'alg'
+        self.gen_alg = self.data/'gen_alg'
 
         # WaveRNN/Vocoder Paths
         self.voc_checkpoints = self.base/'checkpoints'/f'{voc_id}.wavernn'
@@ -50,6 +52,8 @@ class Paths:
         os.makedirs(self.mel, exist_ok=True)
         os.makedirs(self.gta, exist_ok=True)
         os.makedirs(self.alg, exist_ok=True)
+        os.makedirs(self.gen_alg, exist_ok=True)
+        os.makedirs(self.gen_mel, exist_ok=True)
         os.makedirs(self.voc_checkpoints, exist_ok=True)
         os.makedirs(self.voc_output, exist_ok=True)
         os.makedirs(self.tts_checkpoints, exist_ok=True)

@@ -41,7 +41,7 @@ def create_gta_features(model: Tacotron,
 def create_align_features(model: Tacotron,
                           train_set: DataLoader,
                           val_set: DataLoader,
-                          save_path: Path):
+                          paths: Paths):
     assert model.r == 1, f'Reduction factor of tacotron must be 1 for creating alignment features! ' \
                          f'Reduction factor was: {model.r}'
     model.eval()
@@ -51,16 +51,12 @@ def create_align_features(model: Tacotron,
     for i, (x, mels, ids, mel_lens) in enumerate(dataset, 1):
         x, mels = x.to(device), mels.to(device)
         with torch.no_grad():
-            _, _, attn = model(x, mels)
-        attn = np_now(attn)
-        bs, chars = attn.shape[0], attn.shape[2]
-        argmax = np.argmax(attn[:, :, :], axis=2)
-        mel_counts = np.zeros(shape=(bs, chars), dtype=np.int32)
-        for b in range(attn.shape[0]):
-            count = np.bincount(argmax[b, :mel_lens[b]])
-            mel_counts[b, :len(count)] = count[:len(count)]
-        for j, item_id in enumerate(ids):
-            np.save(str(save_path / f'{item_id}.npy'), mel_counts[j, :], allow_pickle=False)
+            _, m, attn = model.generate(x[0])
+        argmax = np.argmax(attn[:, :], axis=1)
+        count = np.bincount(argmax)
+        print(count)
+        np.save(str(paths.gen_alg / f'{ids[0]}.npy'), count, allow_pickle=False)
+        np.save(str(paths.gen_mel / f'{ids[0]}.npy'), m, allow_pickle=False)
         bar = progbar(i, iters)
         msg = f'{bar} {i}/{iters} Batches '
         stream(msg)
@@ -123,8 +119,8 @@ if __name__ == '__main__':
         print('\n\nYou can now train WaveRNN on GTA features - use python train_wavernn.py --gta\n')
     elif force_align:
         print('Creating Attention Alignments...\n')
-        train_set, val_set = get_tts_datasets(paths.data, 8, model.r)
-        create_align_features(model, train_set, val_set, paths.alg)
+        train_set, val_set = get_tts_datasets(paths.data, 1, model.r)
+        create_align_features(model, train_set, val_set, paths)
         print('\n\nYou can now train ForwardTacotron - use python train_forward.py\n')
     else:
         trainer = TacoTrainer(paths)
